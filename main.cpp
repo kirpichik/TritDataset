@@ -6,7 +6,6 @@
 //  Copyright © 2017 Кирилл. All rights reserved.
 //
 
-#include <iostream>
 #include "TritSet.h"
 
 int main(int argc, const char * argv[]) {

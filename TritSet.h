@@ -12,6 +12,10 @@
 #include <iostream>
 #include <vector>
 
+#ifdef _MSC_VER
+typedef unsigned int uint;
+#endif
+
 /**
  * Возможные значения тритов.
  */
@@ -24,6 +28,8 @@ enum Trit {
 class TritSet {
 public:
     
+    class ModifiableTrit;
+    
     /**
      * @param tritsCount Кол-во тритов, которые нужно изначально выделить.
      * Значение памяти округляется в большую сторону, то есть ceil(tritsCount * 2 / 8. / sizeof(uint))
@@ -34,16 +40,12 @@ public:
     /**
      * @see TritSet(size_t, Trit)
      */
-    TritSet(size_t tritsCount) {
-        TritSet(tritsCount, Trit(Unknown));
-    }
+    TritSet(size_t tritsCount) : TritSet(tritsCount, Trit(Unknown)) {}
     
     /**
      * @see TrirSet(size_t, Trit)
      */
-    TritSet() {
-        TritSet(0);
-    }
+    TritSet() : TritSet(0) {}
     
     /**
      * Размер текущей выделенной памяти для тритов в байтах.
@@ -104,7 +106,7 @@ public:
     /**
      * Получение трита по индексу.
      * */
-    Trit operator[](size_t pos) const;
+    ModifiableTrit operator[](size_t pos) const;
     
     /**
      * Логическое NOT.
@@ -124,7 +126,32 @@ public:
     /**
      * Вывод в поток.
      */
-    std::ostream& operator<<(std::ostream& stream) const;
+    std::ostream& operator<<(std::ostream& stream);
+    
+    /** Для выражений set[index] и set[index] = value */
+    class ModifiableTrit {
+    public:
+        ModifiableTrit& operator=(Trit trit) {
+            set.setTrit(pos, trit);
+            return *this;
+        }
+        
+        operator Trit() const {
+            return set.getTrit(pos);
+        }
+        
+    private:
+        size_t pos;
+        TritSet& set;
+        
+        ModifiableTrit(TritSet& set, const size_t pos): set(set), pos(pos) {}
+        
+        ModifiableTrit(const ModifiableTrit& trit): set(trit.set), pos(trit.pos) {}
+        
+        ModifiableTrit& operator=(ModifiableTrit const&) = delete;
+    
+        friend TritSet;
+    };
     
 private:
     size_t lastTritPos; // Позиция последнего не Unknown трита
@@ -153,5 +180,11 @@ private:
      */
     void countLastTritPos();
 };
+
+/** Тритовые операции. */
+
+Trit operator~(const Trit& trit);
+Trit operator&(const Trit& left, const Trit& right);
+Trit operator|(const Trit& left, const Trit& right);
 
 #endif /* TritSet_h */
