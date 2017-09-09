@@ -21,7 +21,7 @@ TritSet::TritSet(size_t tritsCount, Trit defaultValue) {
     for (size_t i = 0; i < tritsCount; i++)
         _setTrit(i, defaultValue);
     
-    if (defaultValue != Trit(Unknown))
+    if (defaultValue != Unknown)
         lastTritPos = tritsCount - 1;
 }
 
@@ -37,17 +37,33 @@ Trit TritSet::getTrit(size_t pos) const {
     size_t uintPos = pos * 2 / 8 / sizeof(uint);
     
     if (uintPos > storage.size() || !storage.size())
-        return Trit(Unknown);
+        return Unknown;
     
     uint data = storage[uintPos];
     pos -= uintPos * sizeof(uint) * 8 / 2;
     
     if (data & (FALSE_BIT_MASK << (pos * 2)))
-        return Trit(False);
+        return False;
     else if (data & (TRUE_BIT_MASK << (pos * 2)))
-        return Trit(True);
+        return True;
     
-    return Trit(Unknown);
+    return Unknown;
+}
+
+size_t TritSet::cardinality(Trit trit) const {
+    size_t count = 0;
+    for (size_t i = 0; i < size(); i++)
+        if (getTrit(i) == trit)
+            count++;
+    return count;
+}
+
+std::unordered_map<Trit, size_t, std::hash<size_t>> TritSet::cardinality() const {
+    std::unordered_map<Trit, size_t, std::hash<size_t>> map;
+    map.emplace(False, cardinality(False));
+    map.emplace(Unknown, cardinality(Unknown));
+    map.emplace(True, cardinality(True));
+    return map;
 }
 
 TritSet& TritSet::trim(size_t from) {
@@ -61,7 +77,7 @@ TritSet& TritSet::trim(size_t from) {
     size_t removeCount = lastTritPos - from;
     
     for (size_t i = 0; i < removeCount; i++)
-        _setTrit(i + from, Trit(Unknown));
+        _setTrit(i + from, Unknown);
     
     shrink();
     countLastTritPos();
@@ -124,9 +140,9 @@ TritSet TritSet::operator&(const TritSet& set) const {
         if (i <= lastTritPos && i <= set.lastTritPos)
             result._setTrit(i, getTrit(i) & set.getTrit(i));
         else if (i <= lastTritPos)
-            result._setTrit(i, getTrit(i) & Trit(Unknown));
+            result._setTrit(i, getTrit(i) & Unknown);
         else
-            result._setTrit(i, set.getTrit(i) & Trit(Unknown));
+            result._setTrit(i, set.getTrit(i) & Unknown);
     
     result.countLastTritPos();
     
@@ -144,9 +160,9 @@ TritSet TritSet::operator|(const TritSet& set) const {
         if (i <= lastTritPos && i <= set.lastTritPos)
             result._setTrit(i, getTrit(i) | set.getTrit(i));
         else if (i <= lastTritPos)
-            result._setTrit(i, getTrit(i) | Trit(Unknown));
+            result._setTrit(i, getTrit(i) | Unknown);
         else
-            result._setTrit(i, set.getTrit(i) | Trit(Unknown));
+            result._setTrit(i, set.getTrit(i) | Unknown);
     
     result.countLastTritPos();
     
@@ -188,13 +204,13 @@ void TritSet::_setTrit(size_t pos, Trit value) {
     
     uint mask;
     switch (value) {
-        case Trit(False):
+        case False:
             mask = FALSE_BIT_MASK;
             break;
-        case Trit(Unknown):
+        case Unknown:
             mask = UNKNOWN_BIT_MASK;
             break;
-        case Trit(True):
+        case True:
             mask = TRUE_BIT_MASK;
             break;
     }
@@ -207,7 +223,7 @@ void TritSet::countLastTritPos() {
     size_t allowedPos = storage.size() * sizeof(uint) * 8 / 2;
     
     for (size_t i = 0; i < allowedPos; i++)
-        if (getTrit(i) != Trit(Unknown))
+        if (getTrit(i) != Unknown)
             lastTritPos = i;
 }
 

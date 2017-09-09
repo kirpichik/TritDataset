@@ -28,13 +28,13 @@ TritSet* tritSetFromString(std::string str) {
     for (char c : str) {
         switch (c) {
             case 'f':
-                set->setTrit(pos, Trit(False));
+                set->setTrit(pos, False);
                 break;
             case 'u':
-                set->setTrit(pos, Trit(Unknown));
+                set->setTrit(pos, Unknown);
                 break;
             case 't':
-                set->setTrit(pos, Trit(True));
+                set->setTrit(pos, True);
                 break;
             default:
                 delete set;
@@ -61,17 +61,17 @@ TEST(ConstructorTritSetTest, AllocatingMemory) {
 }
 
 TEST(ConstructorTritSetTest, SettingDefaultValue) {
-    TritSet set(1000, Trit(True));
+    TritSet set(1000, True);
     
     ASSERT_EQ(set.size(), 1000);
     ASSERT_GE(set.capacity(), 1000);
     
     for (size_t i = 0; i < 1000; i++)
-        ASSERT_EQ(set[i], Trit(True));
+        ASSERT_EQ(set[i], True);
 }
 
 TEST(MethodsTritSetTest, TrimSet) {
-    TritSet set(100, Trit(True));
+    TritSet set(100, True);
     
     ASSERT_EQ(set.size(), 100);
     ASSERT_GE(set.capacity(), 100);
@@ -83,11 +83,11 @@ TEST(MethodsTritSetTest, TrimSet) {
     
     // Проверка оставшихся
     for (size_t i = 0; i < 50; i++)
-        ASSERT_EQ(set.getTrit(i), Trit(True));
+        ASSERT_EQ(set.getTrit(i), True);
     
     // Проверка удаленных
     for (size_t i = 50; i < 100; i++)
-        ASSERT_EQ(set.getTrit(i), Trit(Unknown));
+        ASSERT_EQ(set.getTrit(i), Unknown);
 }
 
 TEST(MethodsTritSetTest, ShrinkSet) {
@@ -101,17 +101,17 @@ TEST(MethodsTritSetTest, ShrinkSet) {
     ASSERT_EQ(set.size(), 0);
     ASSERT_GE(set.capacity(), 0);
     
-    set.setTrit(99, Trit(True));
+    set.setTrit(99, True);
     
     ASSERT_EQ(set.size(), 100);
     ASSERT_GE(set.capacity(), 100);
     
-    set.setTrit(49, Trit(False));
+    set.setTrit(49, False);
     
     ASSERT_EQ(set.size(), 100);
     ASSERT_GE(set.capacity(), 100);
     
-    set.setTrit(99, Trit(Unknown));
+    set.setTrit(99, Unknown);
     
     ASSERT_EQ(set.size(), 50);
     ASSERT_GE(set.capacity(), 100);
@@ -125,27 +125,63 @@ TEST(MethodsTritSetTest, ShrinkSet) {
 TEST(MethodsTritSetTest, GetTrit) {
     TritSet set;
     
-    ASSERT_EQ(set.setTrit(0, Trit(True)).getTrit(0), Trit(True));
-    ASSERT_EQ(set.setTrit(10, Trit(True)).getTrit(10), Trit(True));
+    ASSERT_EQ(set.setTrit(0, True).getTrit(0), True);
+    ASSERT_EQ(set.setTrit(10, True).getTrit(10), True);
 }
 
 TEST(MethodsTritSetTest, GetSetTrit) {
     TritSet set;
     
-    ASSERT_EQ(set.setTrit(0, Trit(Unknown)).size(), 0);
+    ASSERT_EQ(set.setTrit(0, Unknown).size(), 0);
     ASSERT_EQ(set.capacity(), 0);
     
-    ASSERT_EQ(set.setTrit(10, Trit(Unknown)).size(), 0);
+    ASSERT_EQ(set.setTrit(10, Unknown).size(), 0);
     ASSERT_EQ(set.capacity(), 0);
     
-    set.setTrit(0, Trit(True));
+    set.setTrit(0, True);
     ASSERT_EQ(set.size(), 1);
     ASSERT_GE(set.capacity(), 1);
     
-    set.setTrit(9, Trit(True));
+    set.setTrit(9, True);
     
     ASSERT_EQ(set.size(), 10);
     ASSERT_GE(set.capacity(), 10);
+}
+
+TEST(MethodsTritSetTest, Cardinality) {
+    TritSet emptySet, setFalse(100, False), setUnknown(100, Unknown), setTrue(100, True);
+    
+    std::unordered_map<Trit, size_t, std::hash<size_t>> map = emptySet.cardinality();
+    
+    ASSERT_EQ(map.at(False), 0);
+    ASSERT_EQ(map.at(Unknown), 0);
+    ASSERT_EQ(map.at(True), 0);
+    
+    map = setFalse.cardinality();
+    
+    ASSERT_EQ(map.at(False), 100);
+    ASSERT_EQ(map.at(Unknown), 0);
+    ASSERT_EQ(map.at(True), 0);
+    
+    map = setUnknown.cardinality();
+    
+    ASSERT_EQ(map.at(False), 0);
+    ASSERT_EQ(map.at(Unknown), 0);
+    ASSERT_EQ(map.at(True), 0);
+    
+    map = setTrue.cardinality();
+    
+    ASSERT_EQ(map.at(False), 0);
+    ASSERT_EQ(map.at(Unknown), 0);
+    ASSERT_EQ(map.at(True), 100);
+    
+    TritSet* set = tritSetFromString("FFFUUUTTT");
+    
+    map = set->cardinality();
+    
+    ASSERT_EQ(map.at(False), 3);
+    ASSERT_EQ(map.at(Unknown), 3);
+    ASSERT_EQ(map.at(True), 3);
 }
 
 /** NOT оператор. */
@@ -163,7 +199,7 @@ TEST(OperatorsTritSetTest, OperatorNOTEmpty) {
 }
 
 TEST(OperatorsTritSetTest, OperatorNOTFalse) {
-    TritSet setFalse(10, Trit(False));
+    TritSet setFalse(10, False);
     
     ASSERT_EQ(setFalse.size(), 10);
     ASSERT_GE(setFalse.capacity(), 10);
@@ -174,11 +210,11 @@ TEST(OperatorsTritSetTest, OperatorNOTFalse) {
     ASSERT_GE(setFalse.capacity(), 10);
     
     for (size_t i = 0; i < 10; i++)
-        ASSERT_EQ(setFalse.getTrit(i), Trit(True));
+        ASSERT_EQ(setFalse.getTrit(i), True);
 }
 
 TEST(OperatorsTritSetTest, OperatorNOTUnknown) {
-    TritSet setUnknown(10, Trit(Unknown));
+    TritSet setUnknown(10, Unknown);
     
     ASSERT_EQ(setUnknown.size(), 0);
     ASSERT_GE(setUnknown.capacity(), 10);
@@ -189,11 +225,11 @@ TEST(OperatorsTritSetTest, OperatorNOTUnknown) {
     ASSERT_GE(setUnknown.capacity(), 0);
     
     for (size_t i = 0; i < 10; i++)
-        ASSERT_EQ(setUnknown.getTrit(i), Trit(Unknown));
+        ASSERT_EQ(setUnknown.getTrit(i), Unknown);
 }
 
 TEST(OperatorsTritSetTest, OperatorNOTTrue) {
-    TritSet setTrue(10, Trit(True));
+    TritSet setTrue(10, True);
     
     ASSERT_EQ(setTrue.size(), 10);
     ASSERT_GE(setTrue.capacity(), 10);
@@ -204,7 +240,7 @@ TEST(OperatorsTritSetTest, OperatorNOTTrue) {
     ASSERT_GE(setTrue.capacity(), 10);
     
     for (size_t i = 0; i < 10; i++)
-        ASSERT_EQ(setTrue.getTrit(i), Trit(False));
+        ASSERT_EQ(setTrue.getTrit(i), False);
 }
 
 TEST(OperatorsTritSetTest, OperatorNOTAll) {
@@ -227,7 +263,7 @@ TEST(OperatorsTritSetTest, OperatorNOTAll) {
 
 TEST(OperatorsTritSetTest, OperatorORContinually) {
     TritSet setEmpty;
-    TritSet setTrue(10, Trit(True)), setFalse(10, Trit(False)), setUnknown(10, Trit(Unknown));
+    TritSet setTrue(10, True), setFalse(10, False), setUnknown(10, Unknown);
 
     ASSERT_EQ(setEmpty.size(), 0);
     ASSERT_GE(setEmpty.capacity(), 0);
@@ -346,7 +382,7 @@ TEST(OperatorsTritSetTest, OperatorORDifferent) {
 
 TEST(OperatorsTritSetTest, OperatorANDContinually) {
     TritSet setEmpty;
-    TritSet setTrue(10, Trit(True)), setFalse(10, Trit(False)), setUnknown(10, Trit(Unknown));
+    TritSet setTrue(10, True), setFalse(10, False), setUnknown(10, Unknown);
     
     ASSERT_EQ(setEmpty.size(), 0);
     ASSERT_GE(setEmpty.capacity(), 0);
@@ -464,7 +500,7 @@ TEST(OperatorsTritSetTest, OperatorANDDifferent) {
 /** Оператор сравнения. */
 
 TEST(OperatorsTritSetTest, OperatorEquals) {
-    TritSet setTrue(10, Trit(True)), setFalse(10, Trit(False)), setUnknown(10, Trit(Unknown));
+    TritSet setTrue(10, True), setFalse(10, False), setUnknown(10, Unknown);
     TritSet* setLeft = tritSetFromString("FUT");
     TritSet* setRight = tritSetFromString("UTF");
     TritSet* setSmall = tritSetFromString("TF");
@@ -489,27 +525,27 @@ TEST(OperatorsTritSetTest, OperatorEquals) {
 TEST(OperatorsTritSetTest, OperatorGet) {
     TritSet set;
     
-    ASSERT_EQ(set.setTrit(0, Trit(True))[0], Trit(True));
-    ASSERT_EQ(set.setTrit(10, Trit(True))[10], Trit(True));
+    ASSERT_EQ(set.setTrit(0, True)[0], True);
+    ASSERT_EQ(set.setTrit(10, True)[10], True);
 }
 
 /** Оператор установки по индексу. */
 TEST(OperatorsTritSetTest, OperatorSet) {
     TritSet set;
     
-    set[0] = Trit(Unknown);
+    set[0] = Unknown;
     ASSERT_EQ(set.size(), 0);
     ASSERT_GE(set.capacity(), 0);
     
-    set[10] = Trit(Unknown);
+    set[10] = Unknown;
     ASSERT_EQ(set.size(), 0);
     ASSERT_GE(set.capacity(), 0);
     
-    set[0] = Trit(True);
+    set[0] = True;
     ASSERT_GE(set.capacity(), 1);
     ASSERT_EQ(set.size(), 1);
     
-    set[9] = Trit(True);
+    set[9] = True;
     ASSERT_GE(set.capacity(), 10);
     ASSERT_EQ(set.size(), 10);
 }

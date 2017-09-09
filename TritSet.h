@@ -11,7 +11,9 @@
 
 #include <iostream>
 #include <vector>
+#include <unordered_map>
 
+// Все ради одного замечательного компилятора...
 #ifdef _MSC_VER
 typedef unsigned int uint;
 #endif
@@ -65,6 +67,23 @@ public:
      * @return Значение трита на данной позиции.
      */
     Trit getTrit(size_t pos) const;
+    
+    /**
+     * Подсчитывает кол-во установленных в данное значение тритов.
+     * Для трита Unknown - кол-во тритов Unknown до последнего
+     * установленного Unknown трита.
+     * @param trit Тип трита.
+     * @return Кол-во тритов.
+     */
+    size_t cardinality(Trit trit) const;
+    
+    /**
+     * Подсчитывает кол-во установленных в данное значение тритов.
+     * Для трита Unknown - кол-во тритов Unknown до последнего
+     * установленного Unknown трита.
+     * @return Кол-во тритов каждого из типов.
+     */
+    std::unordered_map<Trit, size_t, std::hash<size_t>> cardinality() const;
     
     /**
      * Удаляет все значения после позиции from и освобождает лишнюю память.
@@ -128,7 +147,7 @@ public:
      */
     std::ostream& operator<<(std::ostream& stream);
     
-    /** Для выражений set[index] и set[index] = value */
+    /** Для выражений set[%index%] и set[%index%] = %value% */
     class ModifiableTrit {
     public:
         ModifiableTrit& operator=(Trit trit) {
@@ -157,11 +176,6 @@ private:
     size_t lastTritPos; // Позиция последнего не Unknown трита
     
     std::vector<uint> storage;
-    
-    // Счетчики значений тритов.
-    size_t falseTritCount;
-    size_t unknownTritCount;
-    size_t trueTritCount;
     
     /** Устанавливает трит на заданную позицию.
      * Если позиция трита выходит за рамки выделенной памяти
